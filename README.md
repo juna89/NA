@@ -1,1 +1,1 @@
-sampel.github.io
+sampel
