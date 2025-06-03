@@ -1,140 +1,683 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Programming di RumahRafif.</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Workload Monitoring Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1b31, #1d2b4e, #0a1225);
+            color: #e0e7ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #a6c0fe, #f68084);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .date-display {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .view-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .view-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .view-toggle.active {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+        }
+        
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .filter-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .filter-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #8f94fb;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+        
+        select:focus, input:focus {
+            border-color: #4e54c8;
+        }
+        
+        option {
+            background: #1d2b4e;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .panel {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .panel-title i {
+            color: #8f94fb;
+            font-size: 20px;
+        }
+        
+        .panel-title h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e0e7ff;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .time-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .time-btn {
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e7ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .time-btn:hover {
+            background: rgba(78, 84, 200, 0.3);
+        }
+        
+        .time-btn.active {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            border-color: #4e54c8;
+        }
+        
+        /* Calendar Styles */
+        #calendar {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 25px;
+        }
+        
+        .fc {
+            color: #e0e7ff;
+        }
+        
+        .fc .fc-toolbar-title {
+            color: #e0e7ff;
+            font-size: 1.5em;
+        }
+        
+        .fc .fc-button {
+            background-color: rgba(78, 84, 200, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e7ff;
+            transition: all 0.3s ease;
+        }
+        
+        .fc .fc-button:hover {
+            background-color: rgba(78, 84, 200, 0.8);
+        }
+        
+        .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: #4e54c8;
+        }
+        
+        .fc .fc-daygrid-day-frame {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .fc .fc-daygrid-day.fc-day-today {
+            background: rgba(78, 84, 200, 0.2);
+        }
+        
+        .fc .fc-event {
+            background-color: rgba(78, 84, 200, 0.7);
+            border: none;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+        
+        .fc .fc-event:hover {
+            background-color: rgba(78, 84, 200, 0.9);
+        }
+        
+        .fc .fc-timegrid-slot {
+            height: 60px !important;
+        }
+        
+        /* Hourly Workload Styles */
+        .hourly-workload {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .hourly-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-top: 30px;
+        }
+        
+        .hourly-label {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: #a0a0ff;
+        }
+        
+        .hourly-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .hourly-bar-container {
+            height: 60px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .hourly-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .hourly-bar-label {
+            position: absolute;
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+            color: white;
+            font-weight: 600;
+            z-index: 1;
+        }
+        
+        /* Employee Workload Summary */
+        .employee-workload-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .employee-workload-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .employee-workload-card:hover {
+            transform: translateY(-5px);
+            border-color: #8f94fb;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        
+        .employee-workload-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .employee-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .employee-info {
+            flex: 1;
+        }
+        
+        .employee-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .employee-role {
+            color: #a0a0ff;
+            font-size: 14px;
+        }
+        
+        .workload-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .workload-stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            font-size: 18px;
+            color: #ffcc00;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #a0a0ff;
+        }
+        
+        .workload-progress {
+            margin-top: 15px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #4e54c8, #8f94fb);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1d2b4e, #0f1b31);
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #8f94fb;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: #a0a0ff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            color: #ffcc00;
+            transform: rotate(90deg);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0ff;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #f14e5a);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4e54c8;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .header-controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .time-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-    <nav>
-        <div class="wrapper">
-            <div class="logo"><a href=''>RumahRafif.</a></div>
-            <div class="menu">
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#courses">Courses</a></li>
-                    <li><a href="#tutors">Tutors</a></li>
-                    <li><a href="#partners">Partners</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                    <li><a href="" class="tbl-biru">Sign Up</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <div class="wrapper">
-        <!-- untuk home -->
-        <section id="home">
-            <img src="https://img.freepik.com/free-vector/web-development-programmer-engineering-coding-website-augmented-reality-interface-screens-developer-project-engineer-programming-software-application-design-cartoon-illustration_107791-3863.jpg?size=626&ext=jpg&ga=GA1.2.1769275626.1605867161"/>
-            <div class="kolom">
-                <p class="deskripsi">Belajar Programming #dirumahaja</p>
-                <h2>Tetap Sehat, Tetap Semangat</h2>
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nesciunt, nobis.</p>
-                <p><a href="" class="tbl-pink">Pelajari Lebih Lanjut</a></p>
-            </div>
-        </section>
-
-        <!-- untuk courses -->
-        <section id="courses">
-            <div class="kolom">
-                <p class="deskripsi">You Will Need This</p>
-                <h2>Online Courses</h2>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed deserunt voluptatibus possimus blanditiis reiciendis. Qui, facilis! Delectus exercitationem dolores sapiente?</p>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sed deserunt voluptatibus possimus blanditiis reiciendis. Qui, facilis! Delectus exercitationem dolores sapiente?</p>
-                <p><a href="" class="tbl-biru">Pelajari Lebih Lanjut</a></p>
-            </div>
-            <img src="https://img.freepik.com/free-vector/online-learning-isometric-concept_1284-17947.jpg?size=626&ext=jpg&ga=GA1.2.1769275626.1605867161"/>
-        </section>
-
-        <!-- untuk tutors -->
-        <section id="tutors">
-            <div class="tengah">
-                <div class="kolom">
-                    <p class="deskripsi">Our Top Tutors</p>
-                    <h2>Tutors</h2>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad, optio!</p>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
                 </div>
-
-                <div class="tutor-list">
-                    <div class="kartu-tutor">
-                        <img src="https://dfu1k3y1rami2.cloudfront.net/wp-content/uploads/2014/07/26195109/2020_cb.jpg"/>
-                        <p>Jason Lee Scott</p>
-                    </div>
-                    <div class="kartu-tutor">
-                        <img src="https://images.ctfassets.net/1wryd5vd9xez/4DxzhQY7WFsbtTkoYntq23/a4a04701649e92a929010a6a860b66bf/https___cdn-images-1.medium.com_max_2000_1_Y6l_FDhxOI1AhjL56dHh8g.jpeg"/>
-                        <p>John Doe</p>
-                    </div>
-                    <div class="kartu-tutor">
-                        <img src="https://images.fastcompany.net/image/upload/w_596,c_limit,q_auto:best,f_auto/fc/3021752-inline-i-1-why-square-designed-its-new-offices-to-work-like-a-city.jpg"/>
-                        <p>Michael Dell</p>
-                    </div>
-                    <div class="kartu-tutor">
-                        <img src="https://blogs-images.forbes.com/jackkelly/files/2019/06/Jack-Kelly_avatar_1559658819-400x400.jpg"/>
-                        <p>Bruce Wills</p>
-                    </div>
+                <h1>Workload Monitoring Dashboard</h1>
+            </div>
+            <div class="header-controls">
+                <div class="date-display">
+                    <i class="fas fa-calendar-day"></i> <span id="current-date">June 5, 2025</span>
+                </div>
+                <div class="view-toggle-group">
+                    <button class="view-toggle active" id="daily-view">
+                        <i class="fas fa-calendar-day"></i> Harian
+                    </button>
+                    <button class="view-toggle" id="weekly-view">
+                        <i class="fas fa-calendar-week"></i> Mingguan
+                    </button>
+                    <button class="view-toggle" id="monthly-view">
+                        <i class="fas fa-calendar-alt"></i> Bulanan
+                    </button>
                 </div>
             </div>
-        </section>
-
-        <!-- untuk partners -->
-        <section id="partners">
-            <div class="tengah">
-                <div class="kolom">
-                    <p class="deskripsi">Our Top Partners</p>
-                    <h2>Partners</h2>
-                    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Quasi magni tempore expedita sequi. Similique rerum doloremque impedit saepe atque maxime.</p>
+        </header>
+        
+        <div class="controls-section">
+            <div class="filter-card">
+                <div class="filter-title">
+                    <i class="fas fa-users"></i> Filter Pekerja
                 </div>
-
-                <div class="partner-list">
-                    <div class="kartu-partner">
-                        <img src="https://www.designevo.com/res/templates/thumb_small/black-wheat-and-mortarboard.png"/>
-                    </div>
-                    <div class="kartu-partner">
-                        <img src="https://image.freepik.com/free-vector/campus-collage-university-education-logo-design-template_7492-63.jpg"/>
-                    </div>
-                    <div class="kartu-partner">
-                        <img src="https://image.freepik.com/free-vector/campus-collage-university-education-logo-design-template_7492-62.jpg"/>
-                    </div>
-                    <div class="kartu-partner">
-                        <img src="https://www.designevo.com/res/templates/thumb_small/encircled-branches-and-book.png"/>
-                    </div>
-                    <div class="kartu-partner">
-                        <img src="https://image.freepik.com/free-vector/campus-collage-university-education-logo-design-template_7492-64.jpg"/>
-                    </div>
-                </div>
+                <select id="employee-filter">
+                    <option value="all">Semua Pekerja</option>
+                    <option value="budi">Budi Santoso</option>
+                    <option value="siti">Siti Rahayu</option>
+                    <option value="agus">Agus Wijaya</option>
+                    <option value="dian">Dian Permatasari</option>
+                    <option value="eko">Eko Prasetyo</option>
+                </select>
             </div>
-        </section>
-    </div>
-
-    <div id="contact">
-        <div class="wrapper">
-            <div class="footer">
-                <div class="footer-section">
-                    <h3>RumahRafif.</h3>
-                    <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint, culpa!</p>
+            
+            <div class="filter-card">
+                <div class="filter-title">
+                    <i class="fas fa-tasks"></i> Jenis Pekerjaan
                 </div>
-                <div class="footer-section">
-                    <h3>About</h3>
-                    <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sint, culpa!</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Contact</h3>
-                    <p>Jl. Laksda Adisucipto Sleman Yogyakarta</p>
-                    <p>Kode Pos: 57365</p>
-                </div>
-                <div class="footer-section">
-                    <h3>Social</h3>
-                    <p><b>YouTube: </b>Programming di RumahRafif</p>
-                </div>
+                <select id="job-type-filter">
+                    <option value="all">Semua Jenis</option>
+                    <option value="development">Pengembangan</option>
+                    <option value="design">Desain</option>
+                    <option value="testing">Pengujian</option>
+                    <option value="documentation">Dokumentasi</option>
+                    <option value="maintenance">Pemeliharaan</option>
+                </select>
             </div>
-        </div>
-    </div>
-
-    <div id="copyright">
-        <div class="wrapper">
-            &copy; 2020. <b>RumahRafif.</b> All Rights Reserved.
-        </div>
-    </div>
-    
-</body>
-</html>
+            
+            <div class="filter-card">
+                <div class="filter-title">
+                    <i class="fas fa-calendar-alt"></i> Periode
+                </div>
+                <input type="date" id="date-filter" value="2025-06-05">
+            </div>
+            
+            <div class="filter-card">
+                <div class="filter-title">
+                    <i class="fas fa-search"></i> Cari Pekerjaan
+                </div>
+                <inp
